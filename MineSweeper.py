@@ -45,18 +45,19 @@ def reveal(board,display_board,to_reveal,position_str):
     rows = find_position(board, letter)
     columns = int(position_str[1::])  
     revealed_non_mine_cells = count_revealed(board)
-    if revealed_non_mine_cells < to_reveal:
+    if revealed_non_mine_cells + 1 == to_reveal:
+        print("Congratulations, You WIN!!!!")
         board[rows][columns] = count_surrounding_mines(board, rows, columns)
-        display_board[rows][columns] = count_surrounding_mines(board, rows, columns)
+    elif revealed_non_mine_cells < to_reveal:
+        board[rows][columns] = count_surrounding_mines(board, rows, columns)
+        display_board[rows][columns] = board[rows][columns]
         # If the selected cell is empty, reveal all surrounding empty cells
         if board[rows][columns] == "0":
 
-            reveal_surrounding_empty(board,rows,columns)
-        print_board(board)
+            reveal_surrounding_empty(board,rows,columns,display_board)
+        print_board(display_board)
         position_str = input("Please enter another position to reveal: ")
         reveal(board,display_board,to_reveal,position_str)
-    elif revealed_non_mine_cells == to_reveal:
-        print("Congratulations, You WIN!!!!")
     elif board[rows][columns] == "X":
         print("Game over, you found a bomb!")         
         
@@ -75,7 +76,7 @@ def count_non_mine_cells(board):
     count = sum(row.count('#') for row in board)
     return count
 
-def reveal_surrounding_empty(board, rows, columns):
+def reveal_surrounding_empty(board, rows, columns,display_board):
     if board[rows][columns] != '0':
         return
 
@@ -85,7 +86,8 @@ def reveal_surrounding_empty(board, rows, columns):
         new_row, new_col = rows + dx, columns + dy
         if 0 <= new_row < len(board) and 0 <= new_col < len(board[0]) and board[new_row][new_col] == '#':
             board[new_row][new_col] = count_surrounding_mines(board,new_row,new_col)
-            reveal_surrounding_empty(board, new_row, new_col)
+            display_board[new_row][new_col] = count_surrounding_mines(board,new_row,new_col)
+            reveal_surrounding_empty(board, new_row, new_col,display_board)
 
 def count_surrounding_mines(board, rows, columns):
     mine_count = 0
