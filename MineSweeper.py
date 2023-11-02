@@ -40,18 +40,12 @@ def find_position(board, letter):
                 return rows
 
 # Reveals a given poisition on the board
-def reveal(board,display_board):
+def reveal(board,display_board,to_reveal,position_str):
+    letter = position_str[0].upper()
+    rows = find_position(board, letter)
+    columns = int(position_str[1::])  
     revealed_non_mine_cells = count_revealed(board)
-    if revealed_non_mine_cells == count_non_mine_cells(board)-1:
-        print("Congratulations, You WIN!!!!")
-    else:    
-        position_str = input("Please enter a position to reveal: ")
-        letter = position_str[0].upper()
-        rows = find_position(board, letter)
-        columns = int(position_str[1::])
-    if board[rows][columns] == "X":
-        print("Game over, you found a bomb!")
-    else:
+    if revealed_non_mine_cells < to_reveal:
         board[rows][columns] = count_surrounding_mines(board, rows, columns)
         display_board[rows][columns] = count_surrounding_mines(board, rows, columns)
         # If the selected cell is empty, reveal all surrounding empty cells
@@ -59,7 +53,14 @@ def reveal(board,display_board):
 
             reveal_surrounding_empty(board,rows,columns)
         print_board(board)
-        reveal(board,display_board)
+        position_str = input("Please enter another position to reveal: ")
+        reveal(board,display_board,to_reveal,position_str)
+    elif revealed_non_mine_cells == to_reveal:
+        print("Congratulations, You WIN!!!!")
+    elif board[rows][columns] == "X":
+        print("Game over, you found a bomb!")         
+        
+       
     return board
 
 def count_revealed(board):
@@ -86,9 +87,6 @@ def reveal_surrounding_empty(board, rows, columns):
             board[new_row][new_col] = count_surrounding_mines(board,new_row,new_col)
             reveal_surrounding_empty(board, new_row, new_col)
 
-         
-
-
 def count_surrounding_mines(board, rows, columns):
     mine_count = 0
     directions = [(i, j) for i in range(-1, 2) for j in range(-1, 2) if i != 0 or j != 0]
@@ -97,12 +95,6 @@ def count_surrounding_mines(board, rows, columns):
         new_row, new_col = rows + dx, columns + dy
         if 0 <= new_row < len(board) and 0 <= new_col < len(board[0]) and board[new_row][new_col] == 'X':
             mine_count += 1
-
-    
-         
-      
-    
-
     return f"{mine_count}"
     
 
@@ -116,7 +108,9 @@ display_map = make_board(lines).copy()
 game_map = make_board(lines).copy()
 print_board(display_map)
 add_bombs(bombs,game_map)
-reveal(game_map,display_map)
+to_reveal = count_non_mine_cells(game_map)
+position_str = input("Please enter a position to reveal: ")
+reveal(game_map,display_map,to_reveal,position_str)
 print_board(game_map)
 
 
