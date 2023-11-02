@@ -32,22 +32,81 @@ def print_board(board):
     for i in range(len(board)):
         print(board[i])
 
+# Finds the position of the letter 
+def find_position(board, letter):
+    for rows in range(len(board)):
+        for columns in range(len(board)):
+            if board[rows][columns] == letter:
+                return rows
 
-# Asks the user which spot to reveal and reveals it on the board
-def reveal(board):
-    print("Please select a position to reveal on the board: ")
-    letter = input("Please select a letter:")
-    rows = board.index(f'{letter}')
-    columns = int(input("Select a number:"))
-    position = board[rows][columns]
-    if position == "X":
+# Reveals a given poisition on the board
+def reveal(board,display_board):
+    revealed_non_mine_cells = count_revealed(board)
+    if revealed_non_mine_cells == count_non_mine_cells(board)-1:
+        print("Congratulations, You WIN!!!!")
+    else:    
+        position_str = input("Please enter a position to reveal: ")
+        letter = position_str[0].upper()
+        rows = find_position(board, letter)
+        columns = int(position_str[1::])
+    if board[rows][columns] == "X":
         print("Game over, you found a bomb!")
     else:
-        board[rows][columns] = "O"
+        board[rows][columns] = count_surrounding_mines(board, rows, columns)
+        display_board[rows][columns] = count_surrounding_mines(board, rows, columns)
+        # If the selected cell is empty, reveal all surrounding empty cells
+        if board[rows][columns] == "0":
+
+            reveal_surrounding_empty(board,rows,columns)
         print_board(board)
+        reveal(board,display_board)
     return board
 
+def count_revealed(board):
+    count = 0
+    for i in range(1,len(board)):
+        for j in range(1,len(board)):
+            if board[i][j] in ['0','1','2','3','4','5','6','7','8']:
+                count += 1
+    return count
 
+def count_non_mine_cells(board):
+    count = sum(row.count('#') for row in board)
+    return count
+
+def reveal_surrounding_empty(board, rows, columns):
+    if board[rows][columns] != '0':
+        return
+
+    directions = [(i, j) for i in range(-1, 2) for j in range(-1, 2) if i != 0 or j != 0]
+
+    for dx, dy in directions:
+        new_row, new_col = rows + dx, columns + dy
+        if 0 <= new_row < len(board) and 0 <= new_col < len(board[0]) and board[new_row][new_col] == '#':
+            board[new_row][new_col] = count_surrounding_mines(board,new_row,new_col)
+            reveal_surrounding_empty(board, new_row, new_col)
+
+         
+
+
+def count_surrounding_mines(board, rows, columns):
+    mine_count = 0
+    directions = [(i, j) for i in range(-1, 2) for j in range(-1, 2) if i != 0 or j != 0]
+
+    for dx, dy in directions:
+        new_row, new_col = rows + dx, columns + dy
+        if 0 <= new_row < len(board) and 0 <= new_col < len(board[0]) and board[new_row][new_col] == 'X':
+            mine_count += 1
+
+    
+         
+      
+    
+
+    return f"{mine_count}"
+    
+
+        
 
 
 lines = int(input("How many lines should the board have?(Please enter a positive number)"))
@@ -57,8 +116,8 @@ display_map = make_board(lines).copy()
 game_map = make_board(lines).copy()
 print_board(display_map)
 add_bombs(bombs,game_map)
-reveal(game_map)
-
+reveal(game_map,display_map)
+print_board(game_map)
 
 
 
