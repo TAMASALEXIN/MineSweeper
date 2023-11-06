@@ -1,5 +1,6 @@
 <header>
 <h1 class="title">Module <code>MineSweeper</code></h1>
+  <b> This is a little minesweeper game that I made.</b> 
 </header>
 <section id="section-intro">
 <details class="source">
